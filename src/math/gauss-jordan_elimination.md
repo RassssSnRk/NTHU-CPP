@@ -38,15 +38,16 @@ $$
   \end{array}\right]
 $$
 **第二步**：利用高斯消去法將矩陣化為row echelon form。   
-1. 從第1行開始，利用\\(a_{11}\\)將\\(a_{21} ~ a_{n1}\\)化為0：  
-    a. 將第1行 \\( \times \dfrac {a_{21}} {a_{11}} \\) 並加到第2行  
-    b. 對第3~n行重複這個過程
-2. 對第2~n行重複這個過程  
+1. 從第 i = 1 行開始，利用\\(a_{11}\\)將\\(a_{21} ~ a_{n1}\\)化為0：  
+    a. 將第1行 \\( \times \dfrac {a_{11}} {a_{j1}} \\) 並加到第 j = 2 行  
+    b. 對第j = 2~n 行重複這個過程
+2. 對第 i = 2~n 行重複這個過程，每次利用\\(a_{ii} \\) 將所有 \\( a_{ji}，j \neq i\\) 化為0。
 
 寫成sudo code就是
 ```
 for i = 1; i < n; i++:
-    for j = i+1 ; j <= n; j++ : 
+    for j = 0 ; j <= n; j++ : 
+        if(j != i)continue;
         row[j] += row[i] * a[j][i] / a[i][i];
 ```
 
@@ -76,7 +77,7 @@ $$
 3. 計算答案  
 $$
 \begin{cases}
-{2x = 4 => x = 2} \\\ {\dfrac 5 2 y = \dfrac{25}{2} => y = 5}
+{2x = 4 \rightarrow x = 2} \\\ {\dfrac 5 2 y = \dfrac{25}{2} \rightarrow y = 5}
 \end{cases}
 $$
 ## 實作
@@ -127,8 +128,7 @@ pivot row的選擇並沒有特別的規定。以下介紹3種選擇pivot row的�
 3. implict pivoting：   
     一開始先將所有的等式normalize，也就是乘以一個係數使得該等式最大的係數 = 1。接著再套partial pivoting。
 
-最常被使用的方法是partial pivoting，因為它的誤差很小。而另外一種方法則是complete pivoting。它其實有一個問題，就是當
-當其中一個等式被乘上一個很大的係數，如\\(10^6\\)，那這一行基本上一定會被選擇當做pivot row。但這並不是我們想選他當pivot row的原因，因此才又有一種比較複雜的方法叫做implict pivoting來解決這個問題。implicit pivoting 會先將每一個等式normalize，也就是乘以一個係數使得該等式最大的係數 = 1。接著再套用partial pivoting 或是 complete pivoting。這一篇[codeforces blog](https://codeforces.com/blog/entry/65787)提到有關pivoting帶來的誤差和一些其他的探討，供讀者參考。
+最常被使用的方法是partial pivoting，因為它的誤差很小。另外一種方法則是complete pivoting，但其實有一個問題：當其中一個等式被乘上一個很大的係數，如\\(10^6\\)，那這一行基本上一定會被選擇當做pivot row。但這並不是我們想選他當pivot row的原因，因此才又有一種比較複雜的方法叫做implict pivoting來解決這個問題。implicit pivoting 會先將每一個等式normalize，也就是乘以一個係數使得該等式最大的係數 = 1。接著再套用partial pivoting 或是 complete pivoting。這一篇[codeforces blog](https://codeforces.com/blog/entry/65787)提到有關pivoting帶來的誤差和一些其他的探討，供讀者參考。
 
 ### 檢查解
 ***\*以下僅考慮n個方程式n個未知數的情況\****   
@@ -177,7 +177,7 @@ $$
 如果有某些的v[i][i]等於0且該等式RHS也是0，此線性方程組有無限組解。
 
 ### 時間複雜度
-假設矩陣的大小是\\(n \times m\\)。對於每一行，我們都會把它跟其他每一行做運算。每一次運算花費\\(O(m)\\)，要做 \\(n^2\\) 次，因此時間複雜度是\\(O(n^2m)\\)
+假設矩陣的大小是\\(n \times m\\)。對於每一行，我們都會把它跟其他每一行做運算，每一次運算花費\\(O(m)\\)。假設n < m，那代表這是一個underdetermined system，所以我們至多要以每個等式為pivot做次消去，總共\\(n\\)個等式，每次花費\\(O(nm)\\)，因此總共花費\\(O(n^2m)\\)。如果\\( n > m \\)，那代表這個系統最多有m個變數，我們至多利用這\\(m\\)個變數對系統做高斯消去，每次花費\\(O(nm)\\)，因此總共花費\\(O(nm^2)\\)。因此總時間複雜度是\\(O(nm \times min(n, m))\\)。
 
 ## Modular Cases
 當題目不希望我們輸出小數點的答案時，通常會要求我們輸出一個答案mod質數p。  
@@ -186,11 +186,11 @@ Ex : \\(\frac a b \rightarrow a \times b^{-1}\\)
 在這裡 \\(b^{-1}\\) 代表b mod p 的反元素。根據費馬小定理 \\(b^{-1} = b^{p-2}\\)，可以用快速冪求得。
 
 ### p = 2
-當p = 2 時，我們發現所有係數都是0和1，因此理所當然我們可以用bitset來優化。      
+當p = 2 時，我們發現所有係數都是0和1，因此我們可以用bitset或是bitwise operation來優化。      
 有些關於xor的題目我們也可以用bitset和高斯消去法來優化我們的算法。  
 
 #### 時間複雜度
-根據硬體的不同，可能會有不同倍率的優化，但通常都是\\(O( \frac {n^2m} {32})\\)。
+根據硬體的不同，可能會有不同倍率的優化，但通常都是\\(O( \frac {nm\times min(n, m)} {32})\\)。
 
 ## 題目
 > [洛谷 P3389 - 【模板】高斯消元法](https://www.luogu.com.cn/problem/P3389)
@@ -358,8 +358,24 @@ int main(){
 </details>
 
 > [LightOJ - Graph Coloring](https://lightoj.com/problem/graph-coloring)
+>
+> 給一張無向圖，我們想要幫每個點塗色，總共有 k 種顏色。對於每個點 v 必須滿足 \\(color(v) = color(u_1) + color(u_2) + ... color (u_m)  mod  k\\)，其中 \\( u_1, u_2, ... , u_m \\) 是跟 \\(v\\) 相鄰的點。試問有幾種塗色方法。
+<details><summary> Solution </summary>
+
+稍微調整一下等式我們會得到  \\(-color(v) + color(u_1) + color(u_2) + ... color (u_m) = 0  \  mod \  k\\)  
+總共有n個點，因此我們可以得到n個等式。我們可以把這n個等式存成一個\\(n \times n\\)的矩陣。  
+題目是問有幾種塗色方法，因此我們要求的是有幾組解。我們可以發現這個線性方程組每個free variable都可以帶入0, 1, 2, ...k 而得到一種塗色方法。  
+因此有 r 個 free variable 就有 \\(k^{r}\\) 種塗色方法。  
+一個線性方程組的 free variable 的數量 = n - matrix rank，因此我們其實只要求 \\(k^{n - rank}\\)，然後又可以套模板了。  
+
+</details>
 
 > [SPOJ - XMAX - XOR Maximization](https://www.spoj.com/problems/XMAX/)
+> 我們在集合S上定義\\(X(S)=a_{1} \oplus a_{2} \oplus ... \oplus a_{n}， a_{i} \in S\\)。給你一個有n個數字的集合S，試問X(S)的最大值。   
+> \\(n <= 10^5\\)
+<details><summary> Solution </summary>
+將每個數字用2進位表示，我們可以得到一個\\(n \times 64\\)的矩陣。這時我們直接對這個矩陣做高斯消去法，但是是用XOR的方式，我們就可以知道每個bit是否可以是1。如果這個bit可以是1那代表答案中的這個bit也可以是1，因此我們就可以得到一個盡可能大的答案了。
+</details>
 
 > [CF 167E - Wizards and Bets](https://codeforces.com/contest/167/problem/E)
 > 
@@ -380,9 +396,7 @@ int main(){
 
 </details>
 
-> [CF 1411G - No Game No Life](https://codeforces.com/problemset/problem/1411/G)
 
-> [CF 251D - Two Sets](https://codeforces.com/contest/251/problem/D)
 ## 結語
 
 ## Reference
